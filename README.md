@@ -1,17 +1,13 @@
 # minuspod-mailer
 
-A tiny, dependency-free webhook receiver that turns [MinusPod](https://github.com/ttlequals0/MinusPod)'s
-default webhook payloads into plain-text emails, relayed through an SMTP
-server you already run (e.g. Postfix).
+A tiny, extremely basic, dependency-free webhook receiver that turns [MinusPod](https://github.com/ttlequals0/MinusPod)'s
+default webhook payloads into plain-text emails, relayed through an SMTP server you already run (e.g. Postfix).
 
-Built for rootless Podman + Quadlet, but the container is plain OCI and
-will run under any container runtime.
+Built for rootless Podman + Quadlet, but the container is plain OCI and will run under any container runtime. Tested on **Ubuntu 26.04** and **Podman 5.7.0**.
 
 ## Why
 
-MinusPod can POST webhooks on episode processing completion, episode failure, LLM auth failure, exhausted
-provider spend limits, and structural per-minute rate-limit errors. If you
-just want non-successful events to become an email in your inbox warning you of a problem, this does exactly that.
+MinusPod can POST webhooks on episode processing completion, episode failure, LLM auth failure, exhausted provider spend limits, and structural per-minute rate-limit errors. If you just want non-successful events to become an email in your inbox warning you of a problem, this does exactly that.
 
 ## How it works
 
@@ -19,24 +15,16 @@ just want non-successful events to become an email in your inbox warning you of 
 MinusPod ─POST /webhook ─▶ minuspod-mailer ─SMTP ─▶ your mail relay ─▶ inbox
 ```
 
-`minuspod-mailer` listens on one HTTP endpoint (`/webhook`, dual-stack
-IPv4/IPv6), parses the `event` field, and formats one of four event types
-into an email:
+`minuspod-mailer` listens on one HTTP endpoint (`/webhook`, dual-stack IPv4/IPv6), parses the `event` field, and formats one of four event types into an email:
 
 - `Episode Failed`
 - `Auth Failure`
 - `Limit Exceeded`
 - `Rate Limit Structural`
 
-`Episode Processed` (success) and MinusPod's built-in webhook test ping
-(`"test": true` in the payload) are intentionally ignored: they're logged
-but never emailed, so test-clicks in the MinusPod UI won't spam your inbox.
+`Episode Processed` (success) and MinusPod's built-in webhook test ping (`"test": true` in the payload) are intentionally ignored: they're logged but never emailed, so test-clicks in the MinusPod UI won't spam your inbox.
 
-No authentication or payload signature verification is implemented. This
-is meant to run **bridge-internal only** on the same container network as
-MinusPod, with no host port published so the webhook endpoint is never
-exposed beyond that network. If you need it reachable more broadly, put it
-behind a reverse proxy or Cloudflare tunnel and add your own auth in front.
+No authentication or payload signature verification is implemented. This is meant to run **bridge-internal only** on the same container network as MinusPod, with no host port published so the webhook endpoint is never exposed beyond that network. If you need it reachable more broadly, put it behind a reverse proxy or Cloudflare tunnel and add your own auth in front.
 
 ## Requirements
 
@@ -48,7 +36,7 @@ behind a reverse proxy or Cloudflare tunnel and add your own auth in front.
 
 ## Quick start (rootless Podman + Quadlet)
 
-```bash
+```
 git clone https://github.com/upmcplanetracker/minuspod-mailer.git
 cd minuspod-mailer
 
