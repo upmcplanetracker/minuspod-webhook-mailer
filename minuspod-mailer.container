@@ -1,0 +1,30 @@
+[Unit]
+Description=MinusPod webhook -> SMTP email sidecar
+After=podman-user-wait-network-online.service
+Wants=podman-user-wait-network-online.service
+
+[Container]
+Image=localhost/minuspod-mailer:latest
+ContainerName=minuspod-mailer
+HostName=minuspod-mailer
+Environment=TZ=America/New_York
+
+# Join the same Podman network as your MinusPod container so it can be
+# reached by container DNS name (e.g. http://minuspod-mailer:8080/webhook)
+# without publishing any host ports. Replace with your network's name.
+Network=minuspod.network
+
+# Hardening baseline
+NoNewPrivileges=yes
+DropCapability=ALL
+ReadOnly=yes
+
+EnvironmentFile=%h/.config/containers/systemd/minuspod-mailer.env
+
+# No PublishPort= by design — bridge-internal only.
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
