@@ -44,6 +44,7 @@ behind a reverse proxy or Cloudflare tunnel and add your own auth in front.
 - An SMTP relay reachable from the container (e.g., Postfix, msmtp relay, etc.)
 - No TLS/auth is implemented — plain SMTP on your internal network is assumed.
 - Podman with Quadlet (or adapt `minuspod-mailer.container` to plain `docker run`/Compose — see below).
+- A free port 8080. To check if that is free `ss -tulpn | grep -i "8080"`.  If no output, it is free. If 8080 is being used, search the same way for a free port until you find one with no output. Then edit `Dockerfile`, `mailer.py`, and `env.example` replacing the default `8080` port.
 
 ## Quick start (rootless Podman + Quadlet)
 
@@ -67,8 +68,10 @@ chmod 600 ~/.config/containers/systemd/minuspod-mailer.env
 cp minuspod-mailer.container ~/.config/containers/systemd/
 
 systemctl --user daemon-reload
-systemctl --user enable --now minuspod-mailer.service
+systemctl --user start minuspod-mailer
 journalctl --user -u minuspod-mailer
+# or
+# podman logs minuspod-mailer
 ```
 
 ### Firewall note
@@ -79,13 +82,13 @@ the host's SMTP port will look like it's arriving from the bridge subnet,
 not `127.0.0.1`. You will likely need a firewall rule scoped to that
 subnet, e.g.:
 
-```bash
+```
 sudo ufw allow from <container-bridge-subnet> to any port 25 proto tcp comment 'minuspod-mailer -> smtp relay'
 ```
 
 Find your bridge subnet with:
 
-```bash
+```
 podman network inspect <your-network-name>
 ```
 
@@ -134,7 +137,7 @@ Adding a formatter for a new event type (e.g. `Episode Processed`, or a
 future MinusPod event) means adding one function and one dict entry in
 `mailer.py`:
 
-```python
+```
 def fmt_episode_processed(p: dict) -> tuple[str, str]:
     podcast = p.get("podcast", {})
     episode = p.get("episode", {})
