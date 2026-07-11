@@ -1,4 +1,4 @@
-# minuspod-mailer
+# minuspod-webhook-mailer
 
 A tiny, extremely basic, dependency-free webhook receiver that turns [MinusPod](https://github.com/ttlequals0/MinusPod)'s
 default webhook payloads into plain-text emails, relayed through an SMTP server you already run (e.g. Postfix).
